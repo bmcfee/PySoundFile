@@ -241,9 +241,18 @@ _ffi_types = {
 
 try:
     _snd = _ffi.dlopen('sndfile')
-except OSError:
-    import sys as _sys
-    _snd = _ffi.dlopen(_os.path.join(_sys.prefix, 'lib/libsndfile'))
+except OSError as err:
+    from sys import platform
+    from platform import architecture
+
+    if platform == 'win32' and architecture()[0] == '32bit':
+        _snd = _ffi.dlopen('pysoundfile_binaries/win32/libsndfile')
+    elif platform == 'win32' and architecture()[0] == '64bit':
+        _snd = _ffi.dlopen('pysoundfile_binaries/win64/libsndfile')
+    elif platform == 'darwin':
+        _snd = _ffi.dlopen('pysoundfile_binaries/darwin/libsndfile')
+    else:
+        raise err
 
 
 def read(file, frames=-1, start=0, stop=None, dtype='float64', always_2d=True,
